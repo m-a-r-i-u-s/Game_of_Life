@@ -4,7 +4,7 @@ import matplotlib.animation as animation
 
 cycles = int(input("Cycle number: "))
 
-Time_Axis = np.loadtxt("Game_Saver.txt").reshape(cycles, 100, 100)
+Time_Axis = np.loadtxt("Game_Saver.txt").reshape(cycles, 50, 50)
 
 fig, ax = plt.subplots()
 

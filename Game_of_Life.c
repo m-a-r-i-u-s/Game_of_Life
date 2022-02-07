@@ -2,13 +2,24 @@
 #include <stdlib.h>
 #include <time.h>
 
-const int x_size = 102;
-const int y_size = 102;
+const int x_size = 50;
+const int y_size = 50;
 
-const int x_board = 100;
-const int y_board = 100;
+const double cycles = 5.0;
 
-const int cycles = 5000;
+#define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
+#define PBWIDTH 60
+
+
+//Print a progress bar for the main loop
+void printProgress(double percentage) {
+    //Source: https://stackoverflow.com/questions/14539867/how-to-display-a-progress-indicator-in-pure-c-c-cout-printf
+    int val = (int) (percentage * 100);
+    int lpad = (int) (percentage * PBWIDTH);
+    int rpad = PBWIDTH - lpad;
+    printf("\r%3d%% [%.*s%*s]", val, lpad, PBSTR, rpad, "");
+    fflush(stdout);
+}
 
 //Matrix-Print Function
 void mprint(double matrix[x_size][y_size]){
@@ -26,116 +37,94 @@ void mprint(double matrix[x_size][y_size]){
 
 }
 
+//Modulo
+int mod(int a, int b) {
+
+	int c ;
+
+	if ( a < 0 ) c = a % b + b ;
+	else if ( a > b ) c = a % b;
+	else if ( a == b) c = 0;
+
+	return c ;
+
+}
+
 
 int main(){
 
 	FILE *f = fopen("Game_Saver.txt", "w");
 
-	double universe[x_size][y_size];
+	long int universe[x_size][y_size];
 
-	for (int i = 0; i<x_size; i++){
+	double iterator;
 
-		for (int j = 0; j<y_size; j++){
+	int init = 1000;
 
-			universe[i][j] = 0.0;
-		}
-	}
+	double perc;
 
-	int iterator, init;
-
-	int x, y;
-
-	iterator = 0;
-	init =6000;
-	
 	srand(time(NULL));
 
 	//Initialize the universe
-	while (iterator < init){
+	for (int i = 0; i < x_size; i++){
+		for (int j = 0; j < y_size; j++){
 
-		x = 1 + random() % x_board;
-		y = 1 + random() % y_board;
+			int coin = random() % 2;
 
-		if (universe[x][y]  == 0.0){
-
-			universe[x][y] += 1.0;
-
-			iterator += 1;
-
+			if (coin == 1 && init > 0) {
+				universe[i][j] = 1 ;
+				init -= 1 ;
+			}
+			else universe[i][j] = 0 ;
+		
 		}
 	}
 
-	double alpha = 10;
+	long int sum;
 	
-	iterator = 0;
+	iterator = 0.0;
 
-	double summation[x_board][y_board];
-
-	while (iterator < cycles){
+	double summation[x_size][y_size];
 	
-		for (int i = 0; i<x_board; i++){
+	//Main loop -> Iterate to time
+	while (iterator <= cycles){
 
-			for (int j = 0; j<y_board; j++){
+		//Calculate and display percentages
+		perc = iterator / cycles;
+		printProgress(perc);
 
-				summation[i][j] = 0.0;
-			}
-		}
+		for (int i = 0; i < x_size; i++){
+			for (int j = 0; j < y_size; j++) {
 
-	
-		for (int m =0; m<3; m++){
-
-			for (int n =0; n<3; n++){
-
-				for (int i = 0; i < x_board; i++){
-
-					for (int j=0; j < y_board; j++){
-
-						if (m == 1 && n == 1){
-							summation[i][j] += universe[i+m][j+n]*10.0;
-						}
-
-						else {
-							summation[i][j] += universe[i+m][j+n];
-						}
-
+				//Check neighbours
+				sum = 0;
+				
+				for (int m = -1; m <= 1; m++){
+					for (int n = -1; n <= 1; n++){
+						if (m == 0 & n == 0) {}
+					        else sum += universe[mod(i+m, x_size)][mod(j+n, y_size)] ;
 					}
 				}
+
+				printf("%ld ", sum);
+
+				if (sum == 3 || sum == 2)  universe[i][j] = 1 ; 
+				else if (sum < 2 || sum > 3) universe[i][j] = 0 ; 
+				
+				fprintf(f, "%ld ", universe[i][j]);
+
 			}
 		}
 
-		iterator += 1;
-
-		for (int i = 0; i < x_board; i++){
-
-			for (int j = 0; j < y_board; j++){
-
-				universe[i+1][j+1] = 0.0;
-
-				if (summation[i][j] == 3.0){
-
-					universe[i+1][j+1] += 1.0;
-				}
-				if (summation[i][j] == 12.0 || summation[i][j] == 13.0){
-					universe[i+1][j+1] += 1.0;
-				}
-
-			}
-
-		}
-
-		for (int i = 1; i < x_size-1; i++){
-
-			for (int j = 1; j < y_size-1; j++){
-
-				fprintf(f, "%f ", universe[i][j]);
-
-			}
-
-		}
+	
 		fprintf(f, "\n");
+		
+		iterator += 1.0;
 
 
 	}
+	
+	printf("\n");
 
 	fclose(f);
 								
