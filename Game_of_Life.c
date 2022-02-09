@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
 
-const int x_size = 50;
-const int y_size = 50;
+const int x_size = 100;
+const int y_size = 100;
 
-const double cycles = 5.0;
+const double cycles = 5000.0;
 
 #define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
 #define PBWIDTH 60
@@ -21,32 +22,13 @@ void printProgress(double percentage) {
     fflush(stdout);
 }
 
-//Matrix-Print Function
-void mprint(double matrix[x_size][y_size]){
-
-	for (int i = 0; i < x_size; i++){
-
-		for (int j = 0; j < y_size; j++){
-
-			printf("%f ", matrix[i][j]);
-
-		}
-
-		printf("\n");
-	}
-
-}
 
 //Modulo
 int mod(int a, int b) {
 
-	int c ;
+	if ( a < 0 ) return a % b + b ;
+	else  return a % b;
 
-	if ( a < 0 ) c = a % b + b ;
-	else if ( a > b ) c = a % b;
-	else if ( a == b) c = 0;
-
-	return c ;
 
 }
 
@@ -56,10 +38,11 @@ int main(){
 	FILE *f = fopen("Game_Saver.txt", "w");
 
 	long int universe[x_size][y_size];
+	long int parallel_universe[x_size][y_size];
 
 	double iterator;
 
-	int init = 1000;
+	int init = 5000;
 
 	double perc;
 
@@ -69,55 +52,74 @@ int main(){
 	for (int i = 0; i < x_size; i++){
 		for (int j = 0; j < y_size; j++){
 
-			int coin = random() % 2;
+			int coin = 1 + random() % 100;
 
-			if (coin == 1 && init > 0) {
+			if (coin <= 50 && init > 0) {
 				universe[i][j] = 1 ;
 				init -= 1 ;
 			}
 			else universe[i][j] = 0 ;
+
+                        //printf("%ld ", universe[i][j]);
 		
 		}
+                //printf("\n");
 	}
+
+
+	printf("\n");
 
 	long int sum;
 	
 	iterator = 0.0;
 
 	double summation[x_size][y_size];
-	
+
 	//Main loop -> Iterate to time
-	while (iterator <= cycles){
+	while (iterator < cycles){
 
 		//Calculate and display percentages
-		perc = iterator / cycles;
+		perc = iterator / (cycles - 1);
 		printProgress(perc);
 
-		for (int i = 0; i < x_size; i++){
+		for (int i = 0; i < x_size; i++) {
 			for (int j = 0; j < y_size; j++) {
+				
+                                fprintf(f, "%ld ", universe[i][j]);
+
+                                parallel_universe[i][j] = 0 ;
 
 				//Check neighbours
 				sum = 0;
 				
-				for (int m = -1; m <= 1; m++){
-					for (int n = -1; n <= 1; n++){
-						if (m == 0 & n == 0) {}
-					        else sum += universe[mod(i+m, x_size)][mod(j+n, y_size)] ;
-					}
+				for (int m = -1; m <= 1; m++) {
+					for (int n = -1; n <= 1; n++) {
+						if (m == 0 & n == 0) ;
+                                                else sum += universe[mod(i+m, x_size)][mod(j+n, y_size)] ;
+                                        }
 				}
 
-				printf("%ld ", sum);
-
-				if (sum == 3 || sum == 2)  universe[i][j] = 1 ; 
-				else if (sum < 2 || sum > 3) universe[i][j] = 0 ; 
+                                if (universe[i][j] == 1){
+				        if (sum > 3 || sum < 2) parallel_universe[i][j] = 0 ;
+                                        else parallel_universe[i][j] = 1 ;
+                                }
+                                else{
+				        if (sum == 3) parallel_universe[i][j] = 1 ;
+                                        else parallel_universe[i][j] = 0 ;
+                                }
 				
-				fprintf(f, "%ld ", universe[i][j]);
-
 			}
 		}
 
-	
 		fprintf(f, "\n");
+
+		for (int i = 0; i < x_size; i++) {
+			for (int j = 0; j < y_size; j++) {
+                                universe[i][j] = parallel_universe[i][j] ;
+                        }
+                }
+                
+	
 		
 		iterator += 1.0;
 
