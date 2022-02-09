@@ -2,15 +2,18 @@
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
+#include <unistd.h>
 
 const int x_size = 100;
 const int y_size = 100;
 
-const double cycles = 5000.0;
+const double cycles = 50000.0;
 
 #define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
 #define PBWIDTH 60
 
+#define TILE_LIFE "#"
+#define TILE_DEATH " "
 
 //Print a progress bar for the main loop
 void printProgress(double percentage) {
@@ -60,10 +63,8 @@ int main(){
 			}
 			else universe[i][j] = 0 ;
 
-                        //printf("%ld ", universe[i][j]);
 		
 		}
-                //printf("\n");
 	}
 
 
@@ -111,13 +112,23 @@ int main(){
 			}
 		}
 
-		fprintf(f, "\n");
+                printf("\n");
+                printf("\n");
+
+                printf("###----------- THE UNIVERSE -----------###");
+                printf("\n");
 
 		for (int i = 0; i < x_size; i++) {
 			for (int j = 0; j < y_size; j++) {
                                 universe[i][j] = parallel_universe[i][j] ;
+                                if (universe[i][j] == 1) printf("%s ",  TILE_LIFE);
+                                else printf("%s ",  TILE_DEATH);
                         }
+                        printf("\n");
                 }
+                sleep(1);
+                system("clear");
+                printf("\r");
                 
 	
 		
